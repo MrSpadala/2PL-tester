@@ -1,20 +1,27 @@
 
-from __future__ import print_function  #comparibility python2
+from __future__ import print_function  #compatibility python2
 
 class Operation:
 	def __init__(self, type, trans, obj):
 		if type==None or trans==None or obj==None:
 			raise ValueError
-		if type!='READ' and type!='WRITE':
-			raise ValueError
 
-		self.type = str(type)  #'READ' or 'WRITE'
+		self.type = str(type)
 		self.transaction = str(trans)
 		self.obj = str(obj)
 
 
 	def __str__(self):
-		s = 'r' if self.type=='READ' else 'w'
+		if self.type == 'READ':
+			s = 'r'
+		elif self.type == 'WRITE':
+			s = 'w'
+		if self.type == 'UNLOCKED':
+			s='u'
+		elif self.type == 'SHARED_L':
+			s='sl'
+		elif self.type == 'XCLUSIVE_L':
+			s='xl'
 		return s+self.transaction+'('+self.obj+')'
 
 
@@ -62,32 +69,27 @@ def parse_schedule(sched):
 
 
 def print_schedule(sched):
-	for trans in sched:
-		print(str(trans), end=' ')
+	for op in sched:
+		print(str(op), end=' ')
 	print()
 
 
-def lock(target, trans, obj):  #pretty string repr of a lock operation
-	if target=='UNLOCKED':
-		s='u'
-	elif target=='SHARED_L':
-		s='sl'
-	elif target=='XCLUSIVE_L':
-		s='xl'
-	else:
-		raise ValueError
-	return s+str(trans)+'('+str(obj)+')'
+def lock(target, trans, obj):
+	""" Returns an Operation object representing the lock operation 'target' on 'obj' by 'trans'
+	"""
+	if target!='SHARED_L' and target!='XCLUSIVE_L' and target!='UNLOCKED':
+		raise ValueError('Invalid lock/unlock operation')
+	return Operation(target, trans, obj)
 
 
-def print_solution(locks, schedule):
-	print('SOLUTION:')
-	for locks_i, trans in zip(locks, schedule):
-		for l in locks_i:
-			print(l, end=' ')
-		print(str(trans), end=' ')
-	for l in locks[len(schedule)]:  #print final unlocks
-		print(l, end=' ')
-	print()
+def get_solution(locks, schedule):
+	""" Returns schedule obtained merging 'schedule' with 'locks'
+	"""
+	sol = []
+	for locks_i, op in zip(locks, schedule): 
+		sol.extend(locks_i + [op])
+	sol.extend(locks[len(schedule)])  #add final unlocks
+	return sol
 
 
 

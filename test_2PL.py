@@ -3,7 +3,7 @@ import sys
 import itertools
 from pprint import pprint
 
-from utils import parse_schedule, print_schedule, lock, print_solution 
+from utils import parse_schedule, print_schedule, lock, get_solution 
 
 
 if len(sys.argv) < 2:
@@ -205,10 +205,14 @@ for i in range(len(schedule)):
 			raise ValueError('Bad state')
 
 	else:
-		raise ValueError('Bad transition type')
+		raise ValueError('Bad operation type')
 
 put_final_unlocks()
-print_solution(locks, schedule)
+
+sol = get_solution(locks, schedule)
+print('SOLUTION:')
+print_schedule(sol)
+
 
 
 
