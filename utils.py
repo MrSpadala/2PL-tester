@@ -24,6 +24,9 @@ class Operation:
 			s='xl'
 		return s+self.transaction+'('+self.obj+')'
 
+	def __repr__(self):  #debugging
+		return self.__str__()
+
 
 
 
@@ -34,7 +37,7 @@ def parse_schedule(sched):
 	"""
 	if sched == '':
 		print('Using test schedule')
-		return parse_schedule(TEST_SCHEDULES[0])
+		return parse_schedule(TEST_SCHEDULES[3])
 
 	schedule = []
 
@@ -98,6 +101,7 @@ TEST_SCHEDULES = [
 	'r1(x)r2(z)r1(z)r3(x)r3(y)w1(x)w3(y)r2(y)w4(z)w2(y)',
 	'r1(A)r2(A)r2(B)w1(A)w2(D)r3(C)r1(C)w3(B)r4(A)',
 	'r1(A)r2(A)r3(B)w1(A)r2(C)r2(B)w2(B)w1(C)',
+	'r1(A)r2(A)r3(B)w1(A)r3(A)r2(C)r2(B)w2(B)w1(C)',
 	'r1(x)w2(x)r3(x)r1(y)r4(z)w2(y)r1(v)w3(v)r4(v)w4(y)w5(y)w5(z)',
 	'r1(A)r2(B)r3(C)r1(B)r2(C)r3(D)w1(C)w2(D)w3(E)',
 	'r1(A)r2(B)r3(C)r1(B)r2(C)r3(D)w1(A)w2(B)w3(C)',

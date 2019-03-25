@@ -64,10 +64,17 @@ def toState(target, trans, obj, i):
 	if target == 'XCLUSIVE_L':
 		# Before gathering exlcusive lock on 'obj', I've to unlock other transactions
 		# that have 'obj' in shared or exclusive lock
-		to_unlock_xl = getTransactionsByState('XCLUSIVE_L', obj)
+		'''to_unlock_xl = getTransactionsByState('XCLUSIVE_L', obj)
 		to_unlock_sl = getTransactionsByState('SHARED_L', obj)
 		to_unlock = set.union(to_unlock_xl, to_unlock_sl)
-		for tx in ( to_unlock - set([trans]) ):	unlock(tx, obj, i)	#don't unlock myself
+		for tx in ( to_unlock - set([trans]) ):	unlock(tx, obj, i)	#don't unlock myself'''
+		while True:
+			to_unlock_xl = getTransactionsByState('XCLUSIVE_L', obj)
+			to_unlock_sl = getTransactionsByState('SHARED_L', obj)
+			to_unlock = set.union(to_unlock_xl, to_unlock_sl) - set([trans])  #don't unlock myself
+			if len(to_unlock) == 0:	break
+			unlock(to_unlock.pop(), obj, i)
+
 
 
 	if transaction_state[trans]=='SHRINKING' and target !='UNLOCKED':
