@@ -66,8 +66,9 @@ def toState(target, trans, obj, i):
 		for tx in ( to_unlock - set([trans]) ):	unlock(tx, obj, i)	#don't unlock myself
 
 
-	if transaction_state[trans]=='SHRINKING' and target !='UNLOCKED':  #can't acquire more locks
-		unfeasible()
+	if transaction_state[trans]=='SHRINKING' and target !='UNLOCKED':
+		unfeasible('while processing '+str(schedule[i])+', tansaction '+trans+' has to acquire a lock, '+
+					'but it has already performed an unlock operation.')
 
 	if target=='UNLOCKED':
 		transaction_state[trans] = 'SHRINKING'
@@ -146,8 +147,9 @@ def put_final_unlocks():
 			toState('UNLOCKED', trans, obj, len(schedule))	
 
 
-def unfeasible():
-	print('Unfeasible!')
+def unfeasible(details=None):
+	if not details:	print('Unfeasible!')
+	else:	print('Unfesasible:', details)
 	if '-v' in sys.argv:
 		pprint(locks)
 	exit(0)
@@ -180,8 +182,8 @@ for i in range(len(schedule)):
 		elif obj_state == 'XCLUSIVE_L':  #ok, can continue to read
 			pass
 
-		elif obj_state == 'UNLOCKED':  #can't re-lock an object
-			unfeasible()
+		elif obj_state == 'UNLOCKED':
+			unfeasible('operation '+str(operation)+' needs to lock an unlocked object')
 		
 		else:
 			raise ValueError('Bad state')
@@ -196,8 +198,8 @@ for i in range(len(schedule)):
 		elif obj_state == 'XCLUSIVE_L':  #ok, can continue to write
 			pass
 
-		elif obj_state == 'UNLOCKED':   #can't re-lock an object
-			unfeasible()
+		elif obj_state == 'UNLOCKED':
+			unfeasible('operation '+str(operation)+' needs to lock an unlocked object')
 
 		else:
 			raise ValueError('Bad state')
