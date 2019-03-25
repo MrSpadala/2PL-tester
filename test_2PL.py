@@ -30,14 +30,18 @@ states = {tx: {o: 'START' for o in objects} for tx in transactions}
 transaction_state = {tx: 'GROWING' for tx in transactions}
 
 # flags that check if the schedule is 2PL-strict
-has_xunlocked = {tx: False for tx in transactions}  #set to true when the transaction unlocks the first exclusive lock
-is_strict = True  #set to false if any transaction has xunlocked but performs another operation
+has_x_unlocked = {tx: False for tx in transactions}  #set to true when the transaction unlocks the first exclusive lock
+is_strict = True  #set to false if any transaction has xunlocked but after performs another operation
+
+# flags that check if the schedule is strong 2PL-strict
+has_unlocked = {tx: False for tx in transactions}  #set to true when the transaction unlocks the first lock, shared or excl.
+is_strong_strict = True  #set to false if any transaction unlocks any lock but after performs another operation
+
 
 
 # output list storing lock/unlock operations.
 # for every transaction i in the schedule, execute locks[i] before schedule[i]
 locks = [ [] for i in range(len(schedule)+1)]  #+1 to add unlocks operations at the end
-
 
 
 
@@ -86,7 +90,11 @@ def toState(target, trans, obj, i):
 
 	# strictness: check if the schedule unlocks an exclusive lock
 	if states[trans][obj]=='XCLUSIVE_L' and target=='UNLOCKED':
-		has_xunlocked[trans] = True
+		has_x_unlocked[trans] = True
+
+	# strong strictness: check if the schedule unlocks any lock
+	if (states[trans][obj]=='XCLUSIVE_L' or states[trans][obj]=='SHARED_L') and target=='UNLOCKED':
+		has_unlocked[trans] = True
 
 	states[trans][obj] = target		#set target state
 	locks[i].append(lock(target, trans, obj))   #add the (un)lock operation to the solution
@@ -191,8 +199,12 @@ for i in range(len(schedule)):
 	obj_state = states[operation.transaction][operation.obj]
 
 	# If a tx has unlocked an exclusive lock and executes another operation, then the whole schedule is not strict
-	if has_xunlocked[operation.transaction]:
+	if has_x_unlocked[operation.transaction]:
 		is_strict = False
+
+	# If a tx has unlocked any lock and executes another operation, then the whole schedule is not strong strict
+	if has_unlocked[operation.transaction]:
+		is_strong_strict = False
 
 
 	if operation.type == 'READ':
@@ -239,6 +251,9 @@ print_schedule(solved_schedule)
 
 print()
 print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
+
+print()
+print('The schedule IS'+('' if is_strong_strict else ' NOT')+' strong strict-2PL')
 
 
 
