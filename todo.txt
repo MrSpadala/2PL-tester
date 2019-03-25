@@ -1,3 +1,3 @@
-strict locking protocol 2PL
-strong locking protocol 2PL
 timestamp protocol, SU SLIDE 143 di concurrency, last 20
+conflict-ser? 
+view-ser?
