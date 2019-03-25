@@ -1,0 +1,77 @@
+PROF
+
+
+
+Using test schedule
+SCHEDULE:
+r1(x) r2(z) r1(z) r3(x) r3(y) w1(x) w3(y) r2(y) w4(z) w2(y)
+
+SOLUTION:
+sl1(x) r1(x) sl2(z) r2(z) sl1(z) r1(z) sl3(x) r3(x) sl3(y) r3(y) xl3(y) u3(x) xl1(x) w1(x) w3(y) u3(y) sl2(y) r2(y) xl2(y) u2(z) u1(z) xl4(z) w4(z) w2(y) u2(y) u4(z) u1(x)
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(A) r2(B) w1(A) w2(D) r3(C) r1(C) w3(B) r4(A)
+
+SOLUTION:
+sl1(A) r1(A) sl2(A) r2(A) sl2(B) r2(B) xl2(D) u2(A) xl1(A) w1(A) w2(D) sl3(C) r3(C) sl1(C) r1(C) u2(B) xl3(B) w3(B) u1(A) sl4(A) r4(A) u2(D) u3(B) u3(C) u4(A) u1(C)
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(A) r3(B) w1(A) r2(C) r2(B) w2(B) w1(C)
+
+SOLUTION:
+sl1(A) r1(A) sl2(A) r2(A) sl3(B) r3(B) sl2(C) u3(B) xl2(B) u2(A) xl1(A) w1(A) r2(C) r2(B) w2(B) u2(C) xl1(C) w1(C) u1(A) u1(C) u2(B)
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(x) w2(x) r3(x) r1(y) r4(z) w2(y) r1(v) w3(v) r4(v) w4(y) w5(y) w5(z)
+
+Unfeasible!
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(B) r3(C) r1(B) r2(C) r3(D) w1(C) w2(D) w3(E)
+
+SOLUTION:
+sl1(A) r1(A) sl2(B) r2(B) sl3(C) r3(C) sl1(B) r1(B) sl2(C) r2(C) sl3(D) r3(D) xl3(E) u3(C) u3(D) xl2(D) u2(C) xl1(C) w1(C) w2(D) w3(E) u3(E) u1(B) u1(A) u1(C) u2(D) u2(B)
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(B) r3(C) r1(B) r2(C) r3(D) w1(A) w2(B) w3(C)
+
+SOLUTION:
+sl1(A) r1(A) sl2(B) r2(B) sl3(C) r3(C) sl1(B) r1(B) sl2(C) r2(C) sl3(D) r3(D) xl1(A) w1(A) u1(B) xl2(B) w2(B) u2(C) xl3(C) w3(C) u2(B) u1(A) u3(C) u3(D)
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(B) r3(C) r1(B) r2(C) r3(A) w1(A) w2(B) w3(C)
+
+Unfeasible!
+
+
+
+
+Using test schedule
+SCHEDULE:
+r1(A) r2(B) r3(C) w1(B) w2(C) w3(A)
+
+Unfeasible!
