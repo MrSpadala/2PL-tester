@@ -58,20 +58,20 @@ def toState(target, trans, obj, i):
 	if target == 'SHARED_L':
 		# Before gathering shared lock on 'obj', I've to unlock other transactions
 		# that have 'obj' in exclusive lock
-		to_unlock = getTransactionsByState('XCLUSIVE_L', obj)
-		for tx in ( to_unlock - set([trans]) ):	unlock(tx, obj, i)	#don't unlock myself
+		while True:  #need to update to_unlock every time in case of side effects of unlock
+			to_unlock = getTransactionsByState('XCLUSIVE_L', obj)
+			to_unlock.discard(trans)   #don't unlock myself
+			if len(to_unlock) == 0:	break
+			unlock(to_unlock.pop(), obj, i)  
 
 	if target == 'XCLUSIVE_L':
 		# Before gathering exlcusive lock on 'obj', I've to unlock other transactions
 		# that have 'obj' in shared or exclusive lock
-		'''to_unlock_xl = getTransactionsByState('XCLUSIVE_L', obj)
-		to_unlock_sl = getTransactionsByState('SHARED_L', obj)
-		to_unlock = set.union(to_unlock_xl, to_unlock_sl)
-		for tx in ( to_unlock - set([trans]) ):	unlock(tx, obj, i)	#don't unlock myself'''
-		while True:
+		while True:  #need to update to_unlock every time in case of side effects of unlock
 			to_unlock_xl = getTransactionsByState('XCLUSIVE_L', obj)
 			to_unlock_sl = getTransactionsByState('SHARED_L', obj)
-			to_unlock = set.union(to_unlock_xl, to_unlock_sl) - set([trans])  #don't unlock myself
+			to_unlock = set.union(to_unlock_xl, to_unlock_sl)
+			to_unlock.discard(trans)   #don't unlock myself
 			if len(to_unlock) == 0:	break
 			unlock(to_unlock.pop(), obj, i)
 
