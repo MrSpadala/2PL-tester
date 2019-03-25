@@ -29,6 +29,10 @@ states = {tx: {o: 'START' for o in objects} for tx in transactions}
 # state of the transaction, if it is in the growing or shrinking phase (#locks)
 transaction_state = {tx: 'GROWING' for tx in transactions}
 
+# flags that check if the schedule is 2PL-strict
+has_xunlocked = {tx: False for tx in transactions}  #set to true when the transaction unlocks the first exclusive lock
+is_strict = True  #set to false if any transaction has xunlocked but performs another operation
+
 
 # output list storing lock/unlock operations.
 # for every transaction i in the schedule, execute locks[i] before schedule[i]
@@ -72,6 +76,10 @@ def toState(target, trans, obj, i):
 
 	if target=='UNLOCKED':
 		transaction_state[trans] = 'SHRINKING'
+
+	# strictness: check if the schedule unlocks an exclusive lock
+	if states[trans][obj]=='XCLUSIVE_L' and target=='UNLOCKED':
+		has_xunlocked[trans] = True
 
 	states[trans][obj] = target		#set target state
 	locks[i].append(lock(target, trans, obj))   #add the (un)lock operation to the solution
@@ -148,8 +156,9 @@ def put_final_unlocks():
 
 
 def unfeasible(details=None):
-	if not details:	print('Unfeasible!')
-	else:	print('Unfesasible:', details)
+	s = 'The schedule is not in 2PL'
+	if not details:	print(s+'!')
+	else:	print(s+':', details)
 	if '-v' in sys.argv:
 		pprint(locks)
 	exit(0)
@@ -169,6 +178,10 @@ for i in range(len(schedule)):
 	operation = schedule[i]
 
 	obj_state = states[operation.transaction][operation.obj]
+
+	# If a tx has unlocked an exclusive lock and executes another operation, then the whole schedule is not strict
+	if has_xunlocked[operation.transaction]:
+		is_strict = False
 
 
 	if operation.type == 'READ':
@@ -207,11 +220,16 @@ for i in range(len(schedule)):
 	else:
 		raise ValueError('Bad operation type')
 
-put_final_unlocks()
+put_final_unlocks()  #unlock active locks
+solved_schedule = get_solution(locks, schedule)  #merge locks and the schedule
 
-sol = get_solution(locks, schedule)
 print('SOLUTION:')
-print_schedule(sol)
+print_schedule(solved_schedule)
+
+print()
+print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
+
+
 
 
 
