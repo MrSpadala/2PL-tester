@@ -72,7 +72,7 @@ def toState(target, trans, obj, i):
 
 	if transaction_state[trans]=='SHRINKING' and target !='UNLOCKED':
 		unfeasible('while processing '+str(schedule[i])+', tansaction '+trans+' has to acquire a lock, '+
-					'but it has already performed an unlock operation.')
+					'but it has already performed an unlock operation.', i)
 
 	if target=='UNLOCKED':
 		transaction_state[trans] = 'SHRINKING'
@@ -155,12 +155,16 @@ def put_final_unlocks():
 			toState('UNLOCKED', trans, obj, len(schedule))	
 
 
-def unfeasible(details=None):
+def unfeasible(details=None, i=None):
 	s = 'The schedule is not in 2PL'
-	if not details:	print(s+'!')
+	if details is None:	print(s+'!')
 	else:	print(s+':', details)
-	if '-v' in sys.argv:
-		pprint(locks)
+
+	if not i is None: 
+		print('\nPartial lock sequence:')
+		sol = get_solution(locks, schedule)
+		offset = i + sum(map(lambda x: len(x), locks))
+		print_schedule(sol[:offset])
 	exit(0)
 
 
@@ -196,7 +200,7 @@ for i in range(len(schedule)):
 			pass
 
 		elif obj_state == 'UNLOCKED':
-			unfeasible('operation '+str(operation)+' needs to lock an unlocked object')
+			unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
 		
 		else:
 			raise ValueError('Bad state')
@@ -212,7 +216,7 @@ for i in range(len(schedule)):
 			pass
 
 		elif obj_state == 'UNLOCKED':
-			unfeasible('operation '+str(operation)+' needs to lock an unlocked object')
+			unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
 
 		else:
 			raise ValueError('Bad state')
