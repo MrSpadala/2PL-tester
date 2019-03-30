@@ -2,7 +2,7 @@
 import itertools
 from pprint import pprint
 
-from utils import parse_schedule, print_schedule, lock, get_solution 
+from utils import parse_schedule, format_schedule, lock, get_solution 
 
 def solve2PL(schedule):
 	# initialize set of transactions and objects
@@ -53,7 +53,8 @@ def solve2PL(schedule):
 				to_unlock = getTransactionsByState('XCLUSIVE_L', obj)
 				to_unlock.discard(trans)   #don't unlock myself
 				if len(to_unlock) == 0:	break
-				unlock(to_unlock.pop(), obj, i)  
+				res = unlock(to_unlock.pop(), obj, i)  
+				if res:	return res  #if here, unfeasible
 
 		if target == 'XCLUSIVE_L':
 			# Before gathering exlcusive lock on 'obj', I've to unlock other transactions
@@ -64,12 +65,13 @@ def solve2PL(schedule):
 				to_unlock = set.union(to_unlock_xl, to_unlock_sl)
 				to_unlock.discard(trans)   #don't unlock myself
 				if len(to_unlock) == 0:	break
-				unlock(to_unlock.pop(), obj, i)
+				res = unlock(to_unlock.pop(), obj, i)
+				if res:	return res  #if here, unfeasible
 
 
 
 		if transaction_state[trans]=='SHRINKING' and target !='UNLOCKED':
-			unfeasible('while processing '+str(schedule[i])+', tansaction '+trans+' has to acquire a lock, '+
+			return unfeasible('while processing '+str(schedule[i])+', tansaction '+trans+' has to acquire a lock, '+
 						'but it has already performed an unlock operation.', i)
 
 		if target=='UNLOCKED':
@@ -121,10 +123,12 @@ def solve2PL(schedule):
 				raise ValueError
 
 		for obj_to_lock in will_be_written:
-			toState('XCLUSIVE_L', trans, obj_to_lock, i)
+			res = toState('XCLUSIVE_L', trans, obj_to_lock, i)
+			if res:	return res
 
 		for obj_to_lock in (will_be_read - will_be_written):   #if the object will be read and written I have already placed an exlcusive lock on it
-			toState('SHARED_L', trans, obj_to_lock, i)
+			res = toState('SHARED_L', trans, obj_to_lock, i)
+			if res:	return res
 
 		# Now that I have finally acquired all locks that I will need in the future,
 		# 'trans' can unlock 'obj'.
@@ -157,17 +161,18 @@ def solve2PL(schedule):
 				toState('UNLOCKED', trans, obj, len(schedule))	
 
 
-	def unfeasible(details=None, i=None):
+	def unfeasible(details, i):
 		s = 'The schedule is not in 2PL'
-		if details is None:	print(s+'!')
-		else:	print(s+':', details)
+		if details is None:	s += '!'
+		else:	s += ': '+details
 
+		s1 = '\nPartial lock sequence: '
 		if not i is None: 
-			print('\nPartial lock sequence:')
 			sol = get_solution(locks, schedule)
 			offset = i + sum(map(lambda x: len(x), locks))
-			print_schedule(sol[:offset])
-		exit(0)
+			s1 += format_schedule(sol[:offset])
+		
+		return {'sol': None, 'partial_locks': s1, 'err': s}
 
 
 
@@ -197,7 +202,8 @@ def solve2PL(schedule):
 		if operation.type == 'READ':
 			
 			if obj_state == 'START':  
-				toState('SHARED_L', operation.transaction, operation.obj, i)
+				res = toState('SHARED_L', operation.transaction, operation.obj, i)
+				if res:	return res
 			
 			elif obj_state == 'SHARED_L':  #ok, can continue to read
 				pass
@@ -206,7 +212,7 @@ def solve2PL(schedule):
 				pass
 
 			elif obj_state == 'UNLOCKED':
-				unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
+				return unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
 			
 			else:
 				raise ValueError('Bad state')
@@ -216,13 +222,14 @@ def solve2PL(schedule):
 		elif operation.type == 'WRITE':
 
 			if obj_state == 'START' or obj_state == 'SHARED_L':
-				toState('XCLUSIVE_L', operation.transaction, operation.obj, i)
+				res = toState('XCLUSIVE_L', operation.transaction, operation.obj, i)
+				if res:	return res
 
 			elif obj_state == 'XCLUSIVE_L':  #ok, can continue to write
 				pass
 
 			elif obj_state == 'UNLOCKED':
-				unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
+				return unfeasible('operation '+str(operation)+' needs to lock an unlocked object', i)
 
 			else:
 				raise ValueError('Bad state')
@@ -234,7 +241,7 @@ def solve2PL(schedule):
 	solved_schedule = get_solution(locks, schedule)  #merge locks and the schedule
 
 	#print('SOLUTION:')
-	solved_schedule_str = print_schedule(solved_schedule, ret_str=True)
+	solved_schedule_str = format_schedule(solved_schedule)
 
 	#print()
 	#print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
@@ -243,9 +250,9 @@ def solve2PL(schedule):
 	#print('The schedule IS'+('' if is_strong_strict else ' NOT')+' strong strict-2PL')
 
 	return {
-		'solution': solved_schedule_str,
-		'is_strict': str(is_strict),
-		'is_strong': str(is_strong)
+		'sol': solved_schedule_str,
+		'strict': str(is_strict),
+		'strong': str(is_strong_strict)
 	}
 
 
