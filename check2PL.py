@@ -233,16 +233,20 @@ def solve2PL(schedule):
 	put_final_unlocks()  #unlock active locks
 	solved_schedule = get_solution(locks, schedule)  #merge locks and the schedule
 
-	print('SOLUTION:')
-	print_schedule(solved_schedule)
+	#print('SOLUTION:')
+	solved_schedule_str = print_schedule(solved_schedule, ret_str=True)
 
-	print()
-	print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
+	#print()
+	#print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
 
-	print()
-	print('The schedule IS'+('' if is_strong_strict else ' NOT')+' strong strict-2PL')
+	#print()
+	#print('The schedule IS'+('' if is_strong_strict else ' NOT')+' strong strict-2PL')
 
-
+	return {
+		'solution': solved_schedule_str,
+		'is_strict': str(is_strict),
+		'is_strong': str(is_strong)
+	}
 
 
 

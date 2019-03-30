@@ -50,14 +50,14 @@ def parse_schedule(sched):
 		elif sched[i] == 'w':
 			t = 'WRITE'
 		else:
-			raise ValueError('operation types must be \'r\' or \'w\'')
+			return 'operation types must be \'r\' or \'w\''
 
 		# get operation transaction
 		tx = sched[i+1]
 
 		# check () integrity
 		if sched[i+2]!='(' or sched[i+4]!=')':
-			raise ValueError('operation transaction and object must be 1 char long')
+			return 'operation transaction and object must be 1 char long'
 		
 		# get operation object
 		o = sched[i+3]
@@ -71,7 +71,13 @@ def parse_schedule(sched):
 
 
 
-def print_schedule(sched):
+def print_schedule(sched, ret_str=False):
+    if ret_str:
+        s = ''
+        for op in sched:
+            s += str(op)+' '
+        return s+'\n'
+
 	for op in sched:
 		print(str(op), end=' ')
 	print()
