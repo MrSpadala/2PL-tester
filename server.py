@@ -11,7 +11,7 @@ app = Flask(__name__)
 index_cached = open('index.html', 'r').read()
 
 
-@app.route("/", methods=['GET'])
+@app.route("/2PL", methods=['GET'])
 def index():
     schedule = request.args.get('schedule')
     
@@ -31,7 +31,8 @@ def index():
     res = solve2PL(sched_parsed)
 
     if res['sol'] is None:
-        return format_response('<br>'+res['err']+'<br><br>'+res['partial_locks'])
+        #return format_response('<br>'+res['err']+'<br><br>'+res['partial_locks'])
+        return format_response('<br>'+res['err']+'<br><br>')
 
     msg = """ <br>
     Solution: {}, <br>
@@ -48,4 +49,4 @@ def format_response(msg):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080)
