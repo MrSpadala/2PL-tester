@@ -15,13 +15,13 @@ index_cached = open('index.html', 'r').read()
 def index():
     schedule = request.args.get('schedule')
 
+    if schedule is None:
+        return index_cached
+
     # stupid check
     tmp = map(lambda c: ord(c)<=31 or ord(c)==127, schedule)
     if any(tmp):
         return "<===3"
-    
-    if schedule is None:
-        return index_cached
 
     schedule = schedule.replace(' ', '')
     if schedule == '':
@@ -46,6 +46,11 @@ def index():
     """.format(res['sol'], res['strict'], res['strong'])
 
     return format_response(msg)
+
+
+@app.route('/manager/html', methods=['GET'])
+def go_away():
+    return '<===3'
 
 
 def format_response(msg):
