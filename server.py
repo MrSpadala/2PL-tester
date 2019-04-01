@@ -77,4 +77,6 @@ def format_response(msg, res):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    from os.path import isfile
+    debug = isfile('.DEBUG')
+    app.run(host="0.0.0.0", port=8080, debug=debug)
