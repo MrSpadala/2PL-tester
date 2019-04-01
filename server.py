@@ -3,6 +3,7 @@ from flask import Flask
 from flask import request
 
 from check2PL import solve2PL
+from checkConflict import solveConflict
 from utils import parse_schedule
 
 app = Flask(__name__)
@@ -33,19 +34,32 @@ def index():
     if type(sched_parsed) == str:  #error message
         return format_response('Parsing error: '+sched_parsed)
     
-    res = solve2PL(sched_parsed)
 
-    if res['sol'] is None:
-        #return format_response('<br>'+res['err']+'<br><br>'+res['partial_locks'])
-        return format_response('<br>'+res['err']+'<br><br>')
+    # Solve
+    res2PL = solve2PL(sched_parsed)
+    resConfl = solveConflict(sched_parsed)
 
-    msg = """ <br>
-    Solution: {}, <br>
-    Is the schedule strict-2PL: <i>{}</i>, <br>
-    Is the schedule strong strict-2PL: <i>{}</i> <br>
-    """.format(res['sol'], res['strict'], res['strong'])
 
-    return format_response(msg)
+    response = ''
+
+    # Format results for 2PL
+    if res2PL['sol'] is None:
+        #return format_response('<br>'+res2PL['err']+'<br><br>'+res2PL['partial_locks'])
+        response = format_response('<br>'+res2PL['err']+'<br><br>')
+
+    else:
+        msg = """ <br>
+        Solution: {}, <br>
+        Is the schedule strict-2PL: <i>{}</i>, <br>
+        Is the schedule strong strict-2PL: <i>{}</i> <br>
+        """.format(res2PL['sol'], res2PL['strict'], res2PL['strong'])
+        response = format_response(msg)
+
+    # Format results for conflict serializability
+    msg = 'Is the schedule conflict serializable: '+str(resConfl)
+    response = format_response(msg)
+
+    return response
 
 
 @app.route('/manager/html', methods=['GET'])
@@ -54,7 +68,7 @@ def go_away():
 
 
 def format_response(msg):
-    return index_cached.replace('<!---->', msg)
+    return index_cached.replace('<!---->', msg+'<br><!---->')
 
 
 
