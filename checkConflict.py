@@ -51,11 +51,13 @@ if __name__ == '__main__':
 	from utils import parse_schedule
 
 	schedule_str = 'w3(A)w2(C)r1(A)w1(B)r1(C)r4(A)w4(D)'
-	#schedule_str = 'w1(x)r2(x)w1(z)r2(z)r3(x)r4(z)w4(z)w2(x)'
+	schedule_str = 'w1(x)r2(x)w1(z)r2(z)r3(x)r4(z)w4(z)w2(x)'
 
 	schedule = parse_schedule(schedule_str)
 
-	solveConflict(schedule)
+	res = solveConflict(schedule)
+
+	print('Is ser?', res)
 
 
 
