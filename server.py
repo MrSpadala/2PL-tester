@@ -14,6 +14,11 @@ index_cached = open('index.html', 'r').read()
 @app.route("/2PL", methods=['GET'])
 def index():
     schedule = request.args.get('schedule')
+
+    # stupid check
+    tmp = map(lambda c: ord(c)<=31 or ord(c)==127, schedule)
+    if any(tmp):
+        return "<===3"
     
     if schedule is None:
         return index_cached
