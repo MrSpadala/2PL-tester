@@ -3,14 +3,30 @@
 <html>
 <head>
 	<title>Two phase lock</title>
+
+  <script type="text/javascript">
+    function update_form()
+    {
+      var url_string = window.location.href;
+      var url = new URL(url_string);
+      var prev_schedule = url.searchParams.get("schedule");
+      var prev_xl_only  = url.searchParams.get("use_xl_only");
+      if (prev_schedule != null) 
+        document.getElementById("input_schedule").value = prev_schedule;
+      if (prev_xl_only == "on")
+        document.getElementById("input_checkbox").checked = true;
+    }
+  </script>
 </head>
-<body>
+
+
+<body onload="update_form()">
 
 <form action="/2PL">
   Schedule:<br>
-  <input type="text" name="schedule" size=80>
+  <input type="text" name="schedule" id="input_schedule" size=80>
   <br><br>
-  <input type="checkbox" name="use_xl_only">Use <i>only</i> exclusive locks
+  <input type="checkbox" name="use_xl_only" id="input_checkbox">Use <i>only</i> exclusive locks
   <br><br>
   <input type="submit" value="Go">
 </form>
