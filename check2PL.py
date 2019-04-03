@@ -4,7 +4,8 @@ from pprint import pprint
 
 from utils import parse_schedule, format_schedule, lock, get_solution 
 
-def solve2PL(schedule):
+def solve2PL(schedule, use_xl_only):
+
 	# initialize set of transactions and objects
 	transactions = set([op.transaction for op in schedule])
 	objects = set([op.obj for op in schedule])
@@ -41,6 +42,10 @@ def solve2PL(schedule):
 		"""
 		if target!='START' and target!='SHARED_L' and target!='XCLUSIVE_L' and target!='UNLOCKED':
 			raise ValueError('Bad target state')
+
+		# If the user requested to use only excl. locks then use excl locks instead of shared ones
+		if use_xl_only and target == 'SHARED_L':
+			target = 'XCLUSIVE_L'
 
 		if states[trans][obj] == target:  #already in target state, do nothing
 			return

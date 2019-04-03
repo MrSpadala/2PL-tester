@@ -14,14 +14,16 @@ index_cached = open('index.html', 'r').read()
 
 @app.route("/2PL", methods=['GET'])
 def index():
-    schedule = request.args.get('schedule')
+    # get and check args
+    schedule    = request.args.get('schedule')
+    use_xl_only = request.args.get('use_xl_only')
 
     response = index_cached
 
     if schedule is None:
         return response
 
-    # stupid check
+    # stupid check on control ASCII characters
     tmp = map(lambda c: ord(c)<=31 or ord(c)==127, schedule)
     if any(tmp):
         return "<===3"
@@ -38,7 +40,7 @@ def index():
     
 
     # Solve
-    res2PL = solve2PL(sched_parsed)
+    res2PL = solve2PL(sched_parsed, use_xl_only)
     resConfl = solveConflict(sched_parsed)
 
 
