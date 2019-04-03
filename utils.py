@@ -41,30 +41,35 @@ def parse_schedule(sched):
 
     schedule = []
 
-    for i in range(0, len(sched), 5):  #rx(A) has 5 chars
-        t, tx, o = None, None, None 
+    try:
 
-        # get operation type
-        if sched[i] == 'r':
-            t = 'READ'
-        elif sched[i] == 'w':
-            t = 'WRITE'
-        else:
-            return 'operation types must be \'r\' or \'w\''
+        for i in range(0, len(sched), 5):  #rx(A) has 5 chars
+            t, tx, o = None, None, None 
 
-        # get operation transaction
-        tx = sched[i+1]
+            # get operation type
+            if sched[i] == 'r':
+                t = 'READ'
+            elif sched[i] == 'w':
+                t = 'WRITE'
+            else:
+                return 'operation types must be \'r\' or \'w\''
 
-        # check () integrity
-        if sched[i+2]!='(' or sched[i+4]!=')':
-            return 'operation transaction and object must be 1 char long'
-        
-        # get operation object
-        o = sched[i+3]
+            # get operation transaction
+            tx = sched[i+1]
 
-        schedule.append(Operation(t,tx,o))
+            # check () integrity
+            if sched[i+2]!='(' or sched[i+4]!=')':
+                return 'operation transaction and object must be 1 char long'
+            
+            # get operation object
+            o = sched[i+3]
 
-    return schedule
+            schedule.append(Operation(t,tx,o))
+
+        return schedule
+
+    except:
+        return 'schedule malformed'
 
 
 
