@@ -26,7 +26,8 @@ def index():
     # stupid check on control ASCII characters
     tmp = map(lambda c: ord(c)<=31 or ord(c)==127, schedule)
     if any(tmp):
-        return "<===3"
+        return go_away()
+    
 
     schedule = schedule.replace(' ', '')
     if schedule == '':
