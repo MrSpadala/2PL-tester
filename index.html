@@ -22,13 +22,14 @@
 
 <body onload="update_form()">
 
-<form action="/2PL">
+<form id="schedule_form" action="/2PL">
   Schedule:<br>
   <input type="text" name="schedule" id="input_schedule" size=80>
   <br><br>
   <input type="checkbox" name="use_xl_only" id="input_checkbox">Use <i>only</i> exclusive locks
   <br><br>
   <input type="submit" value="Go">
+  <input type="reset" value="Clear">
 </form>
 
 

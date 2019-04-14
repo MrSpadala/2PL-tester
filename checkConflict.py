@@ -2,13 +2,13 @@
 def solveConflict(schedule):
 	"""Returns true of false whether the schedule is confl. serializable
 	"""
-    # initialize set of transactions and objects
+    # initialize set of transactions
 	transactions = set([op.transaction for op in schedule])
 
 	# initialize precedence graph
 	graph = {tx: set() for tx in transactions}
 
-	# populate graph
+	# populate precedence graph
 	for op1, i in zip(schedule, range(len(schedule))):
 		for op2 in schedule[i+1:]:
 			if op1.obj != op2.obj:
@@ -19,8 +19,7 @@ def solveConflict(schedule):
 				graph[op1.transaction].add(op2.transaction)
 
 	def DFS(node, visited):
-		""" Returns newly visited nodes, None if it has reached
-		twice at least one node
+		""" Returns newly visited nodes, None if it has reached twice at least one node
 		"""
 		for children in graph[node]:
 			if children in visited:	return None
