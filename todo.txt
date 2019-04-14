@@ -1,3 +1,0 @@
-timestamp protocol, SU SLIDE 143 di concurrency, last 20
-conflict-ser? 
-view-ser?
