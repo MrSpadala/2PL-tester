@@ -58,8 +58,8 @@ def solve2PL(schedule, use_xl_only):
 				to_unlock = getTransactionsByState('XCLUSIVE_L', obj)
 				to_unlock.discard(trans)   #don't unlock myself
 				if len(to_unlock) == 0:	break
-				res = unlock(to_unlock.pop(), obj, i)  
-				if res:	return res  #if here, unfeasible
+				err = unlock(to_unlock.pop(), obj, i)  
+				if err:	return err  #if here, unfeasible
 
 		if target == 'XCLUSIVE_L':
 			# Before gathering exlcusive lock on 'obj', I've to unlock other transactions
@@ -70,8 +70,8 @@ def solve2PL(schedule, use_xl_only):
 				to_unlock = set.union(to_unlock_xl, to_unlock_sl)
 				to_unlock.discard(trans)   #don't unlock myself
 				if len(to_unlock) == 0:	break
-				res = unlock(to_unlock.pop(), obj, i)
-				if res:	return res  #if here, unfeasible
+				err = unlock(to_unlock.pop(), obj, i)
+				if err:	return err  #if here, unfeasible
 
 
 
@@ -128,12 +128,12 @@ def solve2PL(schedule, use_xl_only):
 				raise ValueError
 
 		for obj_to_lock in will_be_written:
-			res = toState('XCLUSIVE_L', trans, obj_to_lock, i)
-			if res:	return res
+			err = toState('XCLUSIVE_L', trans, obj_to_lock, i)
+			if err:	return err
 
 		for obj_to_lock in (will_be_read - will_be_written):   #if the object will be read and written I have already placed an exlcusive lock on it
-			res = toState('SHARED_L', trans, obj_to_lock, i)
-			if res:	return res
+			err = toState('SHARED_L', trans, obj_to_lock, i)
+			if err:	return err
 
 		# Now that I have finally acquired all locks that I will need in the future,
 		# 'trans' can unlock 'obj'.
@@ -207,8 +207,8 @@ def solve2PL(schedule, use_xl_only):
 		if operation.type == 'READ':
 			
 			if obj_state == 'START':  
-				res = toState('SHARED_L', operation.transaction, operation.obj, i)
-				if res:	return res
+				err = toState('SHARED_L', operation.transaction, operation.obj, i)
+				if err:	return err
 			
 			elif obj_state == 'SHARED_L':  #ok, can continue to read
 				pass
@@ -227,8 +227,8 @@ def solve2PL(schedule, use_xl_only):
 		elif operation.type == 'WRITE':
 
 			if obj_state == 'START' or obj_state == 'SHARED_L':
-				res = toState('XCLUSIVE_L', operation.transaction, operation.obj, i)
-				if res:	return res
+				err = toState('XCLUSIVE_L', operation.transaction, operation.obj, i)
+				if err:	return err
 
 			elif obj_state == 'XCLUSIVE_L':  #ok, can continue to write
 				pass
@@ -245,14 +245,7 @@ def solve2PL(schedule, use_xl_only):
 	put_final_unlocks()  #unlock active locks
 	solved_schedule = get_solution(locks, schedule)  #merge locks and the schedule
 
-	#print('SOLUTION:')
 	solved_schedule_str = format_schedule(solved_schedule)
-
-	#print()
-	#print('The schedule IS'+('' if is_strict else ' NOT')+' strict-2PL')
-
-	#print()
-	#print('The schedule IS'+('' if is_strong_strict else ' NOT')+' strong strict-2PL')
 
 	return {
 		'sol': solved_schedule_str,

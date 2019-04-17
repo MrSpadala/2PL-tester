@@ -21,13 +21,7 @@ def index():
     response = index_cached
 
     if schedule is None:
-        return response
-
-    # stupid check on control ASCII characters
-    tmp = map(lambda c: ord(c)<=31 or ord(c)==127, schedule)
-    if any(tmp):
-        return go_away()
-    
+        return response    
 
     schedule = schedule.replace(' ', '')
     if schedule == '':
@@ -68,10 +62,6 @@ def index():
 
     return response
 
-
-@app.route('/manager/html', methods=['GET'])
-def go_away():
-    return '<===3'
 
 
 def format_response(msg, res):    
