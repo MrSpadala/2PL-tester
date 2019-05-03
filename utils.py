@@ -16,12 +16,15 @@ class Operation:
             s = 'r'
         elif self.type == 'WRITE':
             s = 'w'
-        if self.type == 'UNLOCKED':
+        elif self.type == 'UNLOCKED':
             s='u'
         elif self.type == 'SHARED_L':
             s='sl'
         elif self.type == 'XCLUSIVE_L':
             s='xl'
+        else:
+            print('WARNING: op type not recognized')
+            s = self.type
         return s+self.transaction+'('+self.obj+')'
 
     def __repr__(self):  #debugging
