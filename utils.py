@@ -10,6 +10,10 @@ class Operation:
         self.transaction = str(trans)
         self.obj = str(obj)
 
+        # Boolean telling if this operation is the last performed by transaction 'trans'
+        # It is False if it is the last one, True otherwise
+        self.tx_continues = True
+
 
     def __str__(self):
         if self.type == 'READ':
@@ -45,6 +49,7 @@ def parse_schedule(sched):
     schedule = []
 
     i = 0
+    last_ops = dict()  #save last operation for each transaction
 
     try:
         while i < len(sched):
@@ -73,7 +78,15 @@ def parse_schedule(sched):
                 return _sched_malformed_err()
             i = i+o_end+1
 
-            schedule.append(Operation(t,tx,o))
+
+            opeation = Operation(t,tx,o)  #operation object
+
+            last_ops[tx] = operation    #save operation as last for transaction tx
+            schedule.append(operation)  #append operation to schedule
+
+
+        # Set final operations for each transaction
+        map(lambda op: op.tx_continues=False, last_ops.values())
 
         return schedule
 
