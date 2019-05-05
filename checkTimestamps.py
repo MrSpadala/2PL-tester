@@ -53,7 +53,7 @@ def solveTimestamps(schedule):
 	tx_waiting_for_obj = defaultdict(set)   #dict[object] = transaction waiting for object release (e.g. its commit bit)
 
 	# set of waiting transactions
-	global waiting_tx
+	global waiting_tx   #is made global because it will be reassigned by 'commit' function
 	waiting_tx = set()
 
 
@@ -73,12 +73,13 @@ def solveTimestamps(schedule):
 			data = timestamps_data[obj]
 			data[CB] = True
 			# release transactions
-			waiting_tx = waiting_tx - tx_waiting_for_obj[obj]
+			waiting_tx -= tx_waiting_for_obj[obj]
 			tx_waiting_for_obj[obj].clear()
 
 	def rollback(tx):
 		"""Performs the rollback of transaction 'tx'
 		"""
+		global waiting_tx
 		solution.append('rollback '+str(tx))
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
