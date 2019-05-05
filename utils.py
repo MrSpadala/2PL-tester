@@ -44,7 +44,7 @@ def parse_schedule(sched):
     """
     if sched == '':
         print('Using test schedule')
-        return parse_schedule(TEST_SCHEDULES[4])
+        return parse_schedule(TEST_SCHEDULES[-1])
 
     schedule = []
 
@@ -79,19 +79,20 @@ def parse_schedule(sched):
             i = i+o_end+1
 
 
-            opeation = Operation(t,tx,o)  #operation object
+            operation = Operation(t,tx,o)  #operation object
 
             last_ops[tx] = operation    #save operation as last for transaction tx
             schedule.append(operation)  #append operation to schedule
 
 
         # Set final operations for each transaction
-        map(lambda op: op.tx_continues=False, last_ops.values())
+        for op in last_ops.values():
+            op.tx_continues = False
 
         return schedule
 
 
-    except:
+    except ValueError:
         return _sched_malformed_err()
 
 
@@ -144,7 +145,8 @@ TEST_SCHEDULES = [
     'r1(A)r2(B)r3(C)r1(B)r2(C)r3(D)w1(C)w2(D)w3(E)',
     'r1(A)r2(B)r3(C)r1(B)r2(C)r3(D)w1(A)w2(B)w3(C)',
     'r1(A)r2(B)r3(C)r1(B)r2(C)r3(A)w1(A)w2(B)w3(C)',
-    'r1(A)r2(B)r3(C)w1(B)w2(C)w3(A)'
+    'r1(A)r2(B)r3(C)w1(B)w2(C)w3(A)',
+    'r6(A)r8(A)r9(A)w8(A)w11(A)r10(A)'
 ]
 
 
