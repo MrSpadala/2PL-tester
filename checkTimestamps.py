@@ -54,7 +54,8 @@ def solveTimestamps(schedule):
 	def commit(tx):
 		"""Performs the commit of transaction 'tx'
 		"""
-		print('Committing', tx)
+		#print('Committing', tx)
+		solution.append('commit '+str(tx))
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
 			data[CB] = True
@@ -65,7 +66,8 @@ def solveTimestamps(schedule):
 	def rollback(tx):
 		"""Performs the rollback of transaction 'tx'
 		"""
-		print('Rollback', tx)
+		#print('Rollback', tx)
+		solution.append('rollback '+str(tx))
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
 			data[WTS] = data[WTS_C]
@@ -73,6 +75,14 @@ def solveTimestamps(schedule):
 			# release transactions
 			waiting_tx -= tx_waiting_for_obj[obj]
 			tx_waiting_for_obj[obj].clear()
+
+	def execute(op):
+		"""Execute operation op. Write in the solution its execution and,
+		whether it is the last, the commit of its transaction
+		"""
+		solution.append(str(operation))
+		if not operation.tx_continues:
+			commit(operation.transaction)
 
 
 
@@ -115,6 +125,7 @@ def solveTimestamps(schedule):
 			if TS(transaction) >= ts_obj[WTS]:
 				if ts_obj[CB] or TS(transaction) == ts_obj[WTS]:
 					ts_obj[RTS] = max(TS(transaction), ts_obj[RTS])
+					execute(operation)
 				else:
 					waiting_tx.add(transaction)
 					tx_waiting_for_obj[obj].add(transaction)
@@ -127,9 +138,11 @@ def solveTimestamps(schedule):
 				if ts_obj[CB]:
 					ts_obj[WTS] = TS(transaction)
 					ts_obj[CB] = False
+					execute(operation)
 				else:
 					waiting_tx.add(transaction)
 					tx_waiting_for_obj[obj].add(transaction)
+					solution.append('wait '+str(operation))
 			else:
 				if TS(transaction) >= ts_obj[RTS] and TS(transaction) < ts_obj[WTS]:
 					if ts_obj[CB]:
@@ -137,6 +150,7 @@ def solveTimestamps(schedule):
 					else:
 						waiting_tx.add(transaction)
 						tx_waiting_for_obj[obj].add(transaction)
+						solution.append('wait '+str(operation))
 				else:
 					rollback(transaction)
 			
@@ -146,11 +160,14 @@ def solveTimestamps(schedule):
 
 		i += 1
 
+	return solution
 
 
 
 if __name__ == '__main__':
 	schedule = parse_schedule('')
-	solveTimestamps(schedule)
+	solution = solveTimestamps(schedule)
+	from pprint import pprint
+	pprint(solution)
 
 
