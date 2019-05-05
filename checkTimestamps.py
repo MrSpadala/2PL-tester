@@ -53,6 +53,7 @@ def solveTimestamps(schedule):
 	tx_waiting_for_obj = defaultdict(set)   #dict[object] = transaction waiting for object release (e.g. its commit bit)
 
 	# set of waiting transactions
+	global waiting_tx
 	waiting_tx = set()
 
 
@@ -65,19 +66,19 @@ def solveTimestamps(schedule):
 	def commit(tx):
 		"""Performs the commit of transaction 'tx'
 		"""
-		#print('Committing', tx)
+		global waiting_tx
 		solution.append('commit '+str(tx))
+		debug('committing', tx)
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
 			data[CB] = True
 			# release transactions
-			waiting_tx -= tx_waiting_for_obj[obj]
+			waiting_tx = waiting_tx - tx_waiting_for_obj[obj]
 			tx_waiting_for_obj[obj].clear()
 
 	def rollback(tx):
 		"""Performs the rollback of transaction 'tx'
 		"""
-		#print('Rollback', tx)
 		solution.append('rollback '+str(tx))
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
@@ -92,6 +93,8 @@ def solveTimestamps(schedule):
 		whether it is the last, the commit of its transaction
 		"""
 		solution.append(str(operation))
+		if op.type == 'WRITE':
+			written_obj[op.transaction].add(op.obj)
 		if not operation.tx_continues:
 			commit(operation.transaction)
 
@@ -107,8 +110,13 @@ def solveTimestamps(schedule):
 	i = 0
 	while True:
 
+		debug('\nNEW STEP')
+
 		# Check if there is some waiting operation in the queue, if so execute it first
 		released_transactions = set(waiting_ops.keys()) - waiting_tx
+		debug('waiting_ops', waiting_ops)
+		debug('waiting tx', waiting_tx)
+		debug('tx_waiting_for_obj', tx_waiting_for_obj)
 		debug('released transactions:', released_transactions)
 		if len(released_transactions) > 0:
 			tx = released_transactions.pop()
@@ -151,6 +159,7 @@ def solveTimestamps(schedule):
 					debug('put operation in wait', operation)
 					waiting_tx.add(transaction)
 					tx_waiting_for_obj[obj].add(transaction)
+					waiting_ops[transaction].append(operation)
 			else:
 				rollback(transaction)
 
@@ -172,6 +181,7 @@ def solveTimestamps(schedule):
 					else:
 						waiting_tx.add(transaction)
 						tx_waiting_for_obj[obj].add(transaction)
+						waiting_ops[transaction].append(operation)
 						solution.append('wait '+str(operation))
 				else:
 					rollback(transaction)
