@@ -3,6 +3,17 @@ from queue import SimpleQueue
 from collections import defaultdict
 from utils import parse_schedule, _sched_malformed_err
 
+
+
+DEBUG = True
+def debug(*args):
+	msg = ''
+	for arg in args:
+		msg += str(arg)+' '
+	if DEBUG:	print(msg)
+
+
+
 def solveTimestamps(schedule):
 	"""Returns true of false whether the schedule is serializable through timestamps
 	"""
@@ -94,28 +105,38 @@ def solveTimestamps(schedule):
 	waiting_ops = defaultdict(list)  #dict[transaction] = waiting operations of that transaction
 
 	i = 0
-	while i < len(schedule):
+	while True:
 
 		# Check if there is some waiting operation in the queue, if so execute it first
 		released_transactions = set(waiting_ops.keys()) - waiting_tx
+		debug('released transactions:', released_transactions)
 		if len(released_transactions) > 0:
 			tx = released_transactions.pop()
 
 			operation = waiting_ops[tx].pop(0)
 
+			debug('Found operation released', operation)
+
 			if len(waiting_ops[tx]) <= 0:
 				del waiting_ops[tx]
 		
 		else:  # no waiting operation, go on with the schedule
+
+			if i >= len(schedule):
+				# If here, there are no waiting operation and the schedule is empty, can return solution
+				return solution
+
 			operation = schedule[i]
+			debug('Picked operation from schedule', operation)
 			# Check if transaction of the operation is in wait, if so put operation in queue
 			tx = operation.transaction
 			if tx in waiting_tx:
+				debug('Sending operation in queue', operation)
 				waiting_ops[tx].append(operation)
 				i += 1
 				continue
 
-
+		debug('executing operation', operation)
 
 		transaction = operation.transaction
 		obj = operation.obj
@@ -127,6 +148,7 @@ def solveTimestamps(schedule):
 					ts_obj[RTS] = max(TS(transaction), ts_obj[RTS])
 					execute(operation)
 				else:
+					debug('put operation in wait', operation)
 					waiting_tx.add(transaction)
 					tx_waiting_for_obj[obj].add(transaction)
 			else:
@@ -146,7 +168,7 @@ def solveTimestamps(schedule):
 			else:
 				if TS(transaction) >= ts_obj[RTS] and TS(transaction) < ts_obj[WTS]:
 					if ts_obj[CB]:
-						print('operation ignored', operation)
+						solution.append('operation ignored '+str(operation))
 					else:
 						waiting_tx.add(transaction)
 						tx_waiting_for_obj[obj].add(transaction)
@@ -160,12 +182,11 @@ def solveTimestamps(schedule):
 
 		i += 1
 
-	return solution
-
 
 
 if __name__ == '__main__':
-	schedule = parse_schedule('')
+	schedule = parse_schedule('w1(x)r2(x)w1(y)')
+	#schedule = parse_schedule('')
 	solution = solveTimestamps(schedule)
 	from pprint import pprint
 	pprint(solution)
