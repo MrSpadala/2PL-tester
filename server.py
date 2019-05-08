@@ -4,6 +4,7 @@ from flask import request
 
 from check2PL import solve2PL
 from checkConflict import solveConflict
+from checkTimestamps import solveTimestamps
 from utils import parse_schedule
 
 app = Flask(__name__)
@@ -37,6 +38,7 @@ def index():
     # Solve
     res2PL = solve2PL(sched_parsed, use_xl_only)
     resConfl = solveConflict(sched_parsed)
+    resTS = solveTimestamps(sched_parsed)
 
 
     # Format results for conflict serializability
@@ -44,20 +46,28 @@ def index():
     msg += 'Is the schedule conflict serializable: <i>'+str(resConfl)+'</i>'
     response = format_response(msg, response)
 
-
     # Format results for 2PL
     msg = '<b><i>Two phase lock protocol</i></b><br>'
     if res2PL['sol'] is None:
         #return format_response('<br>'+res2PL['err']+'<br><br>'+res2PL['partial_locks'])
-        msg += res2PL['err']+'<br>'
+        msg += res2PL['err']
         response = format_response(msg, response)
-
     else:
         msg += """
         Solution: {}, <br>
         Is the schedule strict-2PL: <i>{}</i>, <br>
         Is the schedule strong strict-2PL: <i>{}</i>
         """.format(res2PL['sol'], res2PL['strict'], res2PL['strong'])
+        response = format_response(msg, response)
+
+    # Format results for timestamps
+    msg = '<b><i>Timestamps (DRAFT)</i></b><br>'
+    if resTS['err'] is None:
+        msg += 'List of executed operations: '+str(resTS['sol'])+'<br>'
+        msg += 'List of waiting transactions at the end of schedule: '+str(resTS['waiting_tx'])+'<br>'
+        response = format_response(msg, response)
+    else:
+        msg += resTS['err']+'<br>'
         response = format_response(msg, response)
 
     return response
@@ -72,4 +82,5 @@ def format_response(msg, res):
 if __name__ == "__main__":
     from os.path import isfile
     debug = isfile('.DEBUG')
-    app.run(host="0.0.0.0", port=8080, debug=debug)
+    host = "localhost" if debug else "0.0.0.0"
+    app.run(host=host, port=8080, debug=debug)

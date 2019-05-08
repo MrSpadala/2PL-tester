@@ -29,12 +29,15 @@ def solveTimestamps(schedule):
 
 	# sanity check on the timestamps
 	try:
+		err = None
 		all_timestamps = [TS(op.transaction) for op in schedule]
 		negative_ts = filter(lambda x: x<0, all_timestamps)
 		if len(list(negative_ts)) > 0:
-			return _sched_malformed_err('Transactions (their timestamps) must be non negative')
+			err = _sched_malformed_err('Transactions (their timestamps) must be non negative')
 	except ValueError:
-		return _sched_malformed_err('Transactions (their timestamps) must be integers')
+		err = _sched_malformed_err('Transactions (their timestamps) must be integers')
+	finally:
+		if err:	return {'err': err}
 
 
 	# timestamps information for each object
@@ -112,7 +115,7 @@ def solveTimestamps(schedule):
 
 		debug('\nNEW STEP')
 
-		# Check if there is some waiting operation in the queue, if so execute it first
+		# Check if there is some waiting operation in the queue, if so fetch it
 		released_transactions = set(waiting_ops.keys()) - waiting_tx
 		debug('waiting_ops', waiting_ops)
 		debug('waiting tx', waiting_tx)
@@ -132,7 +135,8 @@ def solveTimestamps(schedule):
 
 			if i >= len(schedule):
 				# If here, there are no waiting operation and the schedule is empty, can return solution
-				return solution
+				#return solution
+				return {'err': None, 'sol': solution, 'waiting_tx': waiting_tx}
 
 			operation = schedule[i]
 			debug('Picked operation from schedule', operation)
@@ -144,6 +148,8 @@ def solveTimestamps(schedule):
 				i += 1
 				continue
 
+
+		# Now we have fetched the next operation, execute it
 		debug('executing operation', operation)
 
 		transaction = operation.transaction
