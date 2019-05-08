@@ -1,11 +1,10 @@
 
-from queue import SimpleQueue
 from collections import defaultdict
 from utils import parse_schedule, _sched_malformed_err
 
 
-
-DEBUG = True
+from os.path import isfile
+DEBUG = isfile('.DEBUG')
 def debug(*args):
 	msg = ''
 	for arg in args:
@@ -161,6 +160,7 @@ def solveTimestamps(schedule):
 					waiting_tx.add(transaction)
 					tx_waiting_for_obj[obj].add(transaction)
 					waiting_ops[transaction].append(operation)
+					solution.append('wait '+str(operation))
 			else:
 				rollback(transaction)
 
@@ -180,6 +180,7 @@ def solveTimestamps(schedule):
 					if ts_obj[CB]:
 						solution.append('operation ignored '+str(operation))
 					else:
+						debug('put operation in wait', operation)
 						waiting_tx.add(transaction)
 						tx_waiting_for_obj[obj].add(transaction)
 						waiting_ops[transaction].append(operation)
