@@ -25,6 +25,7 @@ def index():
         return response    
 
     schedule = schedule.replace(' ', '')
+    schedule = schedule.lower()
     if schedule == '':
         return format_response('Empty schedule', response)
 
@@ -43,9 +44,7 @@ def index():
 
     # Format results for conflict serializability
     msg = '<b><i>Conflict serializability</i></b><br>'
-    #msg += 'Is the schedule conflict serializable: <i>'+str(resConfl)+'</i>'
-    # TODO fix problematic schedule r3(z) r1(z)w2(y)w4(x)w3(z)w3(y) r1(x)w2(x)
-    msg += 'work in progress'
+    msg += 'Is the schedule conflict serializable: <i>'+str(resConfl)+'</i>'
     response = format_response(msg, response)
 
     # Format results for 2PL
