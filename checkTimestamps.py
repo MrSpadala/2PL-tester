@@ -13,12 +13,72 @@ def debug(*args):
 
 
 
+
 def solveTimestamps(schedule):
 	"""Returns true of false whether the schedule is serializable through timestamps
 	"""
+	# timestamps information for each object
+	data_entry = [-1] * 4  #dummy entry, will initialize all entries like this
+	# indices of the data_entry array where the timestamp information is stored
+	RTS, WTS, WTS_C, CB = 0, 1, 2, 3
+	data_entry[CB] = 1  #commit bit initialized with 1
+	timestamps_data = {op.obj: data_entry.copy() for op in schedule}
 
-	# init object set
-	#objects = set([op.obj for op in schedule])
+
+	# save objects written by each transaction
+	written_obj = defaultdict(set)   #dict[transaction] = written objects by transaction
+
+	# save transactions waiting for object release
+	tx_waiting_for_obj = defaultdict(set)   #dict[object] = transaction waiting for object release (e.g. its commit bit)
+
+	# set of waiting transactions
+	global waiting_tx   #is made global because it will be reassigned by 'commit' and 'rollback' functions
+	waiting_tx = set()
+
+
+	# final solution
+	solution = list()
+
+
+	# - - - - utils - - -
+
+	def commit(tx):
+		"""Performs the commit of transaction 'tx'
+		"""
+		global waiting_tx
+		solution.append('commit '+str(tx))
+		debug('committing', tx)
+		for obj in written_obj[tx]:
+			data = timestamps_data[obj]
+			data[WTS_C] = data[WTS]
+			data[CB] = True
+			# release transactions
+			waiting_tx -= tx_waiting_for_obj[obj]
+			tx_waiting_for_obj[obj].clear()
+
+	def rollback(tx):
+		"""Performs the rollback of transaction 'tx'
+		"""
+		global waiting_tx
+		solution.append('rollback '+str(tx))
+		debug('rollbacking', tx)
+		for obj in written_obj[tx]:
+			data = timestamps_data[obj]
+			data[WTS] = data[WTS_C]
+			data[CB] = True
+			# release transactions
+			waiting_tx -= tx_waiting_for_obj[obj]
+			tx_waiting_for_obj[obj].clear()
+
+	def execute(op):
+		"""Execute operation op. Write in the solution its execution and,
+		whether it is the last, the commit of its transaction
+		"""
+		solution.append(str(operation))
+		if op.type == 'WRITE':
+			written_obj[op.transaction].add(op.obj)
+		if not operation.tx_continues:
+			commit(operation.transaction)
 
 
 	def TS(tx):
@@ -38,69 +98,6 @@ def solveTimestamps(schedule):
 		err = _sched_malformed_err('Transactions (their timestamps) must be integers')
 	finally:
 		if err:	return {'err': err}
-
-
-	# timestamps information for each object
-	data_entry = [-1] * 4  #dummy entry, will initialize all entries like this
-	# indices of the data_entry array where the timestamp information is stored
-	RTS, WTS, WTS_C, CB = 0, 1, 2, 3
-	data_entry[CB] = 1  #commit bit initialized with 1
-	timestamps_data = {op.obj: data_entry.copy() for op in schedule}
-
-
-	# save objects written by each transaction
-	written_obj = defaultdict(set)   #dict[transaction] = written objects by transaction
-
-	# save transactions waiting for object release
-	tx_waiting_for_obj = defaultdict(set)   #dict[object] = transaction waiting for object release (e.g. its commit bit)
-
-	# set of waiting transactions
-	global waiting_tx   #is made global because it will be reassigned by 'commit' function
-	waiting_tx = set()
-
-
-	# final solution
-	solution = list()
-
-
-	# - - - - utils - - -
-
-	def commit(tx):
-		"""Performs the commit of transaction 'tx'
-		"""
-		global waiting_tx
-		solution.append('commit '+str(tx))
-		debug('committing', tx)
-		for obj in written_obj[tx]:
-			data = timestamps_data[obj]
-			data[CB] = True
-			# release transactions
-			waiting_tx -= tx_waiting_for_obj[obj]
-			tx_waiting_for_obj[obj].clear()
-
-	def rollback(tx):
-		"""Performs the rollback of transaction 'tx'
-		"""
-		global waiting_tx
-		solution.append('rollback '+str(tx))
-		for obj in written_obj[tx]:
-			data = timestamps_data[obj]
-			data[WTS] = data[WTS_C]
-			data[CB] = True
-			# release transactions
-			waiting_tx -= tx_waiting_for_obj[obj]
-			tx_waiting_for_obj[obj].clear()
-
-	def execute(op):
-		"""Execute operation op. Write in the solution its execution and,
-		whether it is the last, the commit of its transaction
-		"""
-		solution.append(str(operation))
-		if op.type == 'WRITE':
-			written_obj[op.transaction].add(op.obj)
-		if not operation.tx_continues:
-			commit(operation.transaction)
-
 
 
 
