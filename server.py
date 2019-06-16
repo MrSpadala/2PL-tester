@@ -4,7 +4,7 @@ from flask import request
 
 from check2PL import solve2PL
 from checkConflict import solveConflict
-from checkTimestamps_NEW import solveTimestamps
+from checkTimestamps import solveTimestamps
 from utils import parse_schedule
 
 app = Flask(__name__)
@@ -64,8 +64,8 @@ def index():
     # Format results for timestamps
     msg = '<b><i>Timestamps (DRAFT)</i></b><br>'
     if resTS['err'] is None:
-        #msg += 'List of executed operations: '+str(resTS['sol'])+'<br>'
-        msg += resTS['sol']+'<br>'
+        msg += 'List of executed operations: '+str(resTS['sol'])+'<br>'
+        #msg += resTS['sol']+'<br>'
         msg += 'List of waiting transactions at the end of schedule: '+str(resTS['waiting_tx'])+'<br>'
         response = format_response(msg, response)
     else:
