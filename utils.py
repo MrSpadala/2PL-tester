@@ -11,7 +11,7 @@ class Operation:
         self.obj = str(obj)
 
         # Boolean telling if this operation is the last performed by transaction 'trans'
-        # It is False if it is the last one, True otherwise
+        # It is False if it is the last one, True otherwise. It will be set accordingly by 'parse_schedule'
         self.tx_continues = True
 
 
