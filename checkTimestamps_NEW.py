@@ -48,8 +48,8 @@ def solveTimestamps(schedule):
 		debug('committing', tx)
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
-			data[WTS_C] = data[WTS]
-			data[CB] = True
+			set_timestamp_data(obj, WTS_C, data[WTS])
+			set_timestamp_data(obj, CB, True)
 
 	def rollback(tx):
 		"""Performs the rollback of transaction 'tx'
@@ -58,8 +58,8 @@ def solveTimestamps(schedule):
 		debug('rollbacking', tx)
 		for obj in written_obj[tx]:
 			data = timestamps_data[obj]
-			data[WTS] = data[WTS_C]
-			data[CB] = True
+			set_timestamp_data(obj, WTS, data[WTS_C])
+			set_timestamp_data(obj, CB, True)
 
 	def execute(op):
 		"""Execute operation op. Write in the solution its execution and,
@@ -69,6 +69,12 @@ def solveTimestamps(schedule):
 			written_obj[op.transaction].add(op.obj)
 		if not operation.tx_continues:
 			commit(operation.transaction)
+
+	def set_timestamp_data(obj, key, value):
+		if key!=CB and key!=WTS and key!=WTS_C and key!=RTS:
+			raise ValueError
+		timestamps_data[obj][key] = value
+		solution_entry.append(f'{key}({str(obj)})={value}')
 
 
 	def TS(tx):
@@ -108,6 +114,7 @@ def solveTimestamps(schedule):
 			if timestamps_data[obj][CB] == True:   #if the commit bit of an object, waited by some transaction, becomes true then fetch the operation
 				operation = schedule[i_lock]
 				waiting_tx.pop(operation.transaction)
+				solution_entry.append(f'resume {str(operation.transaction)}')
 				break
 
 		else:  # no waiting operation, go on with the schedule
@@ -139,7 +146,7 @@ def solveTimestamps(schedule):
 		if operation.type == 'READ':
 			if TS(transaction) >= ts_obj[WTS]:
 				if ts_obj[CB] or TS(transaction) == ts_obj[WTS]:
-					ts_obj[RTS] = max(TS(transaction), ts_obj[RTS])
+					set_timestamp_data(obj, RTS, max(TS(transaction), ts_obj[RTS]))
 					execute(operation)
 				else:
 					debug('put operation in wait', operation)
@@ -152,8 +159,8 @@ def solveTimestamps(schedule):
 		elif operation.type == 'WRITE':
 			if TS(transaction) >= ts_obj[RTS] and TS(transaction) >= ts_obj[WTS]:
 				if ts_obj[CB]:
-					ts_obj[WTS] = TS(transaction)
-					ts_obj[CB] = False
+					set_timestamp_data(obj, WTS, TS(transaction))
+					set_timestamp_data(obj, CB, False)
 					execute(operation)
 				else:
 					debug('put operation in wait', operation)
