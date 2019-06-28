@@ -142,4 +142,4 @@ if __name__ == "__main__":
     from os.path import isfile
     debug = isfile('.DEBUG')
     host = "localhost" if debug else "0.0.0.0"
-    app.run(host=host, port=8080, debug=debug)
+    app.run(host=host, port=5000, debug=debug)
