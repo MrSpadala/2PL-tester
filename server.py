@@ -4,7 +4,7 @@ from flask import request
 
 from check2PL import solve2PL
 from checkConflict import solveConflict
-from checkTimestamps import solveTimestamps
+from checkTimestamps_NEW import solveTimestamps
 from utils import parse_schedule
 
 app = Flask(__name__)
@@ -13,7 +13,7 @@ app = Flask(__name__)
 index_cached = open('index.html', 'r').read()
 
 
-@app.route("/", methods=['GET'])
+@app.route("/2PL", methods=['GET', 'POST'])
 def index():
     # get and check args
     schedule    = request.args.get('schedule')
