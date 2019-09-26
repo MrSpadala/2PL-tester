@@ -1,10 +1,12 @@
 
 import itertools
+import sys
 from pprint import pprint
 
 from utils import parse_schedule, format_schedule, lock, get_solution 
 
 def solve2PL(schedule, use_xl_only):
+	print(schedule, use_xl_only, file=sys.stderr)
 
 	# initialize set of transactions and objects
 	transactions = set([op.transaction for op in schedule])
