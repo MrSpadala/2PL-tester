@@ -3,4 +3,4 @@ __pycache__/
 .vscode/
 log.txt
 .DEBUG
-
+err_log.txt
