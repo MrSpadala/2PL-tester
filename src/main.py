@@ -4,13 +4,13 @@ from flask import request
 
 from check2PL import solve2PL
 from checkConflict import solveConflict
-from checkTimestamps_NEW import solveTimestamps
+from checkTimestamps import solveTimestamps
 from utils import parse_schedule
 
 app = Flask(__name__)
 
 
-index_cached = open('index.html', 'r').read()
+index_cached = open('../static/index.html', 'r').read()
 
 
 @app.route("/2PL", methods=['GET', 'POST'])
