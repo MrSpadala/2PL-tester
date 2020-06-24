@@ -1,46 +1,11 @@
 
 from __future__ import print_function  #compatibility python2
-
-class Operation:
-    def __init__(self, type, trans, obj):
-        if type==None or trans==None or obj==None:
-            raise ValueError
-
-        self.type = str(type)
-        self.transaction = str(trans)
-        self.obj = str(obj)
-
-        # Boolean telling if this operation is the last performed by transaction 'trans'
-        # It is False if it is the last one, True otherwise. It will be set accordingly by 'parse_schedule'
-        self.tx_continues = True
-
-
-    def __str__(self):
-        if self.type == 'READ':
-            s = 'r'
-        elif self.type == 'WRITE':
-            s = 'w'
-        elif self.type == 'UNLOCKED':
-            s='u'
-        elif self.type == 'SHARED_L':
-            s='sl'
-        elif self.type == 'XCLUSIVE_L':
-            s='xl'
-        else:
-            print('WARNING: op type not recognized')
-            s = self.type
-        return s+self.transaction+'('+self.obj+')'
-
-    def __repr__(self):  #debugging
-        return self.__str__()
-
-
-
+from operation import Operation
 
 def parse_schedule(sched):
     """
-    Returns a list of 'Operation' derived from the input schedule as string
-    If the input is empty then a test schedule is used
+    Parses the input schedule as a string.
+    Returns the list of 'Operation' objects
     """
     if sched == '':
         print('Using test schedule')
@@ -97,6 +62,9 @@ def parse_schedule(sched):
 
 
 def _sched_malformed_err(msg=None):
+    """
+    Returns an error message if the schedule is malformed
+    """
     msg = msg if msg else 'schedule malformed'
     help_msg = "<br><br>Enter a schedule like <i>r1(x)w1(y)r2(y)r1(z)</i>"
     return msg+help_msg
@@ -106,6 +74,9 @@ def _sched_malformed_err(msg=None):
 
 
 def format_schedule(sched):
+    """
+    Formats a schedule (as list of Operations) for printing in HTML
+    """
     s = ''
     for op in sched:
         if op.type!='READ' and op.type!='WRITE':
@@ -113,23 +84,6 @@ def format_schedule(sched):
         else:
             s += str(op)+' '
     return s+'\n'
-
-def lock(target, trans, obj):
-    """ Returns an Operation object representing the lock operation 'target' on 'obj' by 'trans'
-    """
-    if target!='SHARED_L' and target!='XCLUSIVE_L' and target!='UNLOCKED':
-        raise ValueError('Invalid lock/unlock operation')
-    return Operation(target, trans, obj)
-
-
-def get_solution(locks, schedule):
-    """ Returns schedule obtained merging 'schedule' with 'locks'
-    """
-    sol = []
-    for locks_i, op in zip(locks, schedule): 
-        sol.extend(locks_i + [op])
-    sol.extend(locks[len(schedule)])  #add final unlocks
-    return sol
 
 
 

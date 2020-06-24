@@ -13,10 +13,14 @@ def debug(*args):
 
 
 
+# WORK IN PROGRESS
+
 
 def solveTimestamps(schedule):
-	"""Returns true of false whether the schedule is serializable through timestamps
 	"""
+	Returns true of false whether the schedule is serializable through timestamps
+	"""
+
 	# timestamps information for each object
 	# indices of the dummy_entry array where the timestamp information is stored
 	RTS, WTS, WTS_C, CB = 'RTS', 'WTS', 'WTS_C', 'CB'
@@ -31,12 +35,9 @@ def solveTimestamps(schedule):
 	#if 'T' is a waiting transaction, then waiting_tx['T'] is the index of the operation of 'T' in the schedule where 'T' is blocked
 	waiting_tx = dict()  
 
-
-
 	# final solution. Its entries are lists
 	solution = list()
 	solution_entry = list()
-
 
 
 	# - - - - utils - - -
@@ -132,7 +133,6 @@ def solveTimestamps(schedule):
 				i += 1
 				continue
 
-
 		# Now we have fetched the next operation, execute it
 		debug('executing operation', operation)
 
@@ -155,7 +155,6 @@ def solveTimestamps(schedule):
 			else:
 				rollback(transaction)
 
-
 		elif operation.type == 'WRITE':
 			if TS(transaction) >= ts_obj[RTS] and TS(transaction) >= ts_obj[WTS]:
 				if ts_obj[CB]:
@@ -177,7 +176,6 @@ def solveTimestamps(schedule):
 				else:
 					rollback(transaction)
 			
-
 		else:
 			raise ValueError('Bad operation type')
 

@@ -1,7 +1,9 @@
 
 def solveConflict(schedule):
-	"""Returns true of false whether the schedule is confl. serializable
 	"""
+	Checks if the schedule is conflict serializable
+	"""
+
     # initialize set of transactions
 	transactions = set([op.transaction for op in schedule])
 

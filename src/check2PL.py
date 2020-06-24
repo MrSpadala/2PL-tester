@@ -3,9 +3,26 @@ import itertools
 import sys
 from pprint import pprint
 
-from utils import parse_schedule, format_schedule, lock, get_solution 
+from utils import parse_schedule, format_schedule
+from operation import Operation
 
 def solve2PL(schedule, use_xl_only):
+	"""
+	Checks if a schedule respects the plain 2PL protocol, strong and strict.
+
+	Args:
+		schedule: list of Operation objects representing the schedule
+		use_xl_only: boolean, if True use only exclusive locks, not shared locks
+
+	Returns:
+		(dict) {
+			'sol': solution schedule with the locks inserted. If the schedule does not 
+						respects 2PL it is an error message,
+			'strict': boolean, true if respects strict 2PL,
+			'strong': boolean, true if respects strong 2PL,
+		}	
+	"""
+
 	print(schedule, use_xl_only, file=sys.stderr)
 
 	# initialize set of transactions and objects
@@ -34,7 +51,26 @@ def solve2PL(schedule, use_xl_only):
 	locks = [ [] for i in range(len(schedule)+1)]  #+1 to add unlocks operations at the end
 
 
+	def lock(target, trans, obj):
+		"""
+		Returns an Operation object representing the lock operation 'target' on 'obj' by 'trans'
+		"""
+		if target!='SHARED_L' and target!='XCLUSIVE_L' and target!='UNLOCKED':
+			raise ValueError('Invalid lock/unlock operation')
+		return Operation(target, trans, obj)
 
+
+	def merge_locks(locks, schedule):
+		"""
+		Returns schedule obtained merging 'schedule' with 'locks'.
+		locks is a list of list, is defined as:
+			for every transaction i in the schedule, execute locks inside locks[i] before schedule[i]
+		"""
+		sol = []
+		for locks_i, op in zip(locks, schedule): 
+			sol.extend(locks_i + [op])
+		sol.extend(locks[len(schedule)])  #add final unlocks
+		return sol
 
 
 	def toState(target, trans, obj, i):
@@ -96,11 +132,6 @@ def solve2PL(schedule, use_xl_only):
 		locks[i].append(lock(target, trans, obj))   #add the (un)lock operation to the solution
 
 
-
-
-
-
-
 	def unlock(trans, obj, i):
 		""" Unlock 'obj' for transaction 'trans'.
 		Before unlocking it, it must acquire ALL future locks that it
@@ -142,11 +173,6 @@ def solve2PL(schedule, use_xl_only):
 		toState('UNLOCKED', trans, obj, i)
 
 
-
-
-
-
-
 	# - - -  utlis  - - - 
 
 	def getTransactionsByState(state, obj):
@@ -175,22 +201,14 @@ def solve2PL(schedule, use_xl_only):
 
 		s1 = '\nPartial lock sequence: '
 		if not i is None: 
-			sol = get_solution(locks, schedule)
+			sol = merge_locks(locks, schedule)
 			offset = i + sum(map(lambda x: len(x), locks))
 			s1 += format_schedule(sol[:offset])
 		
 		return {'sol': None, 'partial_locks': s1, 'err': s}
 
 
-
-
-
-
-
-
-
 	# - - - -  main  - - - -
-
 
 	for i in range(len(schedule)):
 		operation = schedule[i]
@@ -245,7 +263,7 @@ def solve2PL(schedule, use_xl_only):
 			raise ValueError('Bad operation type')
 
 	put_final_unlocks()  #unlock active locks
-	solved_schedule = get_solution(locks, schedule)  #merge locks and the schedule
+	solved_schedule = merge_locks(locks, schedule)  #merge locks and the schedule
 
 	solved_schedule_str = format_schedule(solved_schedule)
 
